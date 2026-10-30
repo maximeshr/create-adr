@@ -1,38 +1,48 @@
 {
   "name": "create-adr",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "CLI to generate Architecture Decision Records",
   "license": "MIT",
-  "type": "commonjs",
   "bin": {
-    "create-adr": "bin/create-adr.js"
+    "create-adr": "./dist/cli.mjs"
   },
   "files": [
-    "bin",
-    "dist",
-    "README.md"
+    "dist"
   ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
-    "build": "tsdown",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "oxlint src bin *.config.ts *.config.cjs",
-    "format": "oxfmt --write src bin *.config.ts *.config.cjs",
-    "format:check": "oxfmt --check src bin *.config.ts *.config.cjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test",
-    "prepublishOnly": "npm run build"
+    "build": "vp pack",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build",
+    "changeset": "changeset",
+    "check:version": "node scripts/check-version.mjs",
+    "version-packages": "changeset version",
+    "release": "vp pack && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@types/node": "^24.12.2",
-    "oxfmt": "^0.20.0",
-    "oxlint": "^1.62.0",
-    "tsdown": "^0.16.8",
     "typescript": "^5.9.3",
-    "vite": "^7.3.2",
-    "vitest": "^4.1.5"
+    "vite-plus": "catalog:"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.11.2",
+      "onFail": "download"
+    },
+    "runtime": {
+      "name": "node",
+      "version": "26.13.0",
+      "onFail": "download"
+    }
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=26"
   }
 }

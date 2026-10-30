@@ -1,11 +1,11 @@
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
-import { describe, expect, it } from "vitest";
-import { formatAdrNumber, generateAdr, getNextAdrNumber, toKebabCase } from "./generate-adr";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { describe, expect, it } from "vite-plus/test";
+import { formatAdrNumber, generateAdr, getNextAdrNumber, toKebabCase } from "./generate-adr.ts";
 
 function createTempDirectory(): string {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "create-adr-"));
+  return mkdtempSync(join(tmpdir(), "create-adr-"));
 }
 
 describe("generate ADR", () => {
@@ -22,10 +22,10 @@ describe("generate ADR", () => {
 
   it("getNextAdrNumber returns next sequence from existing files", () => {
     const tempRoot = createTempDirectory();
-    const adrDir = path.join(tempRoot, "docs", "adr");
-    fs.mkdirSync(adrDir, { recursive: true });
-    fs.writeFileSync(path.join(adrDir, "0001-first.md"), "", "utf8");
-    fs.writeFileSync(path.join(adrDir, "0003-third.md"), "", "utf8");
+    const adrDir = join(tempRoot, "docs", "adr");
+    mkdirSync(adrDir, { recursive: true });
+    writeFileSync(join(adrDir, "0001-first.md"), "", "utf8");
+    writeFileSync(join(adrDir, "0003-third.md"), "", "utf8");
 
     expect(getNextAdrNumber(adrDir)).toBe("0004");
   });
@@ -39,13 +39,13 @@ describe("generate ADR", () => {
     });
 
     expect(relativePath).toBe(
-      path.join("docs", "adr", "0001-use-uri-path-versioning-for-public-apis.md"),
+      join("docs", "adr", "0001-use-uri-path-versioning-for-public-apis.md"),
     );
 
-    const absolutePath = path.join(tempRoot, relativePath);
-    expect(fs.existsSync(absolutePath)).toBe(true);
+    const absolutePath = join(tempRoot, relativePath);
+    expect(existsSync(absolutePath)).toBe(true);
 
-    const content = fs.readFileSync(absolutePath, "utf8");
+    const content = readFileSync(absolutePath, "utf8");
     expect(content).toMatch(/^# ADR-0001: Use URI path versioning for public APIs/m);
     expect(content).toMatch(/- Status: proposed/);
     expect(content).toMatch(/## Context/);

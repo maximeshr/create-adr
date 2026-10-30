@@ -3,6 +3,8 @@
 `create-adr` is a small CLI that generates ADR files under `docs/adr/` at the
 target repository root.
 
+Requires Node.js 26 or later.
+
 ## Usage
 
 From any repository root (after npm publish):
@@ -14,7 +16,7 @@ npx create-adr "Use URI path versioning for public APIs"
 or:
 
 ```sh
-bunx create-adr "Use URI path versioning for public APIs"
+pnpm dlx create-adr "Use URI path versioning for public APIs"
 ```
 
 With explicit title/path flags:
@@ -24,7 +26,7 @@ npx create-adr --title "Use URI path versioning for public APIs" --path /path/to
 ```
 
 ```sh
-bunx create-adr --title "Use URI path versioning for public APIs" --path /path/to/repository
+pnpm dlx create-adr --title "Use URI path versioning for public APIs" --path /path/to/repository
 ```
 
 The command creates:
@@ -47,60 +49,29 @@ The generated file includes:
 
 ## Local development
 
-Install dependencies:
+The toolchain is [Vite+](https://viteplus.dev) (`vp`). Dependencies are managed with [pnpm](https://pnpm.io).
 
 ```sh
-npm install
+vp install
+vp check
+vp test
+vp pack
 ```
 
-Build CLI output with tsdown:
+Run the CLI from source, or the packed bin after `vp pack`:
 
 ```sh
-npm run build
+node ./src/cli.ts "Use URI path versioning for public APIs" --path /path/to/repository
+node ./dist/cli.mjs --help
 ```
 
-Run tests:
+## Releases
 
-```sh
-bun run test
-```
+Releases use [changesets](https://github.com/changesets/changesets). Describe each user-facing change with `vp exec changeset`. On `main`, the Release workflow opens a "Version Packages" pull request that bumps the version and updates `CHANGELOG.md`; merging it publishes to npm and creates the `vX.Y.Z` tag.
 
-Run lint and formatting checks:
+Do not edit the version in `package.json` or push release tags by hand: `vp run check:version` fails when the version is neither published nor in `CHANGELOG.md`.
 
-```sh
-bun run lint
-bun run format:check
-```
-
-Run locally without publishing:
-
-```sh
-node ./bin/create-adr.js "Use URI path versioning for public APIs" --path /path/to/repository
-```
-
-## Publish flow
-
-Before publishing:
-
-1. Update version in `package.json`.
-2. Run `npm run build`.
-3. Run `bun run lint`.
-4. Run `bun run format:check`.
-5. Run `bun run test`.
-6. Validate package contents:
-   ```sh
-   npm pack
-   ```
-7. Authenticate with npm:
-   ```sh
-   npm login
-   ```
-8. Publish:
-   ```sh
-   npm publish
-   ```
-
-After publish, teams can run both `npx create-adr ...` and `bunx create-adr ...`.
+CI runs `pnpm audit --audit-level=high` on every pull request and every push to `main` (Ubuntu), and weekly.
 
 ## License
 
