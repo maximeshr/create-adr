@@ -1,6 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import { buildAdrTemplate } from "./template";
+import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
+import { buildAdrTemplate } from "./template.ts";
 
 type GenerateAdrInput = {
   title: string;
@@ -8,12 +8,12 @@ type GenerateAdrInput = {
 };
 
 export function ensureAbsoluteRoot(targetRoot: string): string {
-  const resolvedPath = path.resolve(targetRoot);
-  if (!fs.existsSync(resolvedPath)) {
+  const resolvedPath = resolve(targetRoot);
+  if (!existsSync(resolvedPath)) {
     throw new Error(`Target path does not exist: ${resolvedPath}`);
   }
 
-  const stat = fs.statSync(resolvedPath);
+  const stat = statSync(resolvedPath);
   if (!stat.isDirectory()) {
     throw new Error(`Target path is not a directory: ${resolvedPath}`);
   }
@@ -37,14 +37,15 @@ export function formatAdrNumber(value: number): string {
 }
 
 export function getNextAdrNumber(adrDirectoryPath: string): string {
-  const files = fs.existsSync(adrDirectoryPath) ? fs.readdirSync(adrDirectoryPath) : [];
+  const files = existsSync(adrDirectoryPath) ? readdirSync(adrDirectoryPath) : [];
 
   const maxNumber = files.reduce((currentMax, fileName) => {
     const match = fileName.match(/^(\d{4})-/);
-    if (!match) {
+    const capturedNumber = match?.[1];
+    if (capturedNumber === undefined) {
       return currentMax;
     }
-    return Math.max(currentMax, Number(match[1]));
+    return Math.max(currentMax, Number(capturedNumber));
   }, 0);
 
   return formatAdrNumber(maxNumber + 1);
@@ -61,8 +62,8 @@ export function generateAdr({ title, targetRoot = process.cwd() }: GenerateAdrIn
   }
 
   const repositoryRoot = ensureAbsoluteRoot(targetRoot);
-  const adrDirectoryPath = path.join(repositoryRoot, "docs", "adr");
-  fs.mkdirSync(adrDirectoryPath, { recursive: true });
+  const adrDirectoryPath = join(repositoryRoot, "docs", "adr");
+  mkdirSync(adrDirectoryPath, { recursive: true });
 
   const adrNumber = getNextAdrNumber(adrDirectoryPath);
   const slug = toKebabCase(trimmedTitle);
@@ -70,8 +71,8 @@ export function generateAdr({ title, targetRoot = process.cwd() }: GenerateAdrIn
     throw new Error("ADR title must include at least one alphanumeric character.");
   }
 
-  const filePath = path.join(adrDirectoryPath, `${adrNumber}-${slug}.md`);
-  if (fs.existsSync(filePath)) {
+  const filePath = join(adrDirectoryPath, `${adrNumber}-${slug}.md`);
+  if (existsSync(filePath)) {
     throw new Error(`ADR already exists: ${filePath}`);
   }
 
@@ -81,6 +82,6 @@ export function generateAdr({ title, targetRoot = process.cwd() }: GenerateAdrIn
     date: getIsoDate(),
   });
 
-  fs.writeFileSync(filePath, content, "utf8");
-  return path.relative(repositoryRoot, filePath);
+  writeFileSync(filePath, content, "utf8");
+  return relative(repositoryRoot, filePath);
 }
