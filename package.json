@@ -2,7 +2,7 @@
   "name": "create-adr",
   "version": "0.1.0",
   "description": "CLI to generate Architecture Decision Records",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "commonjs",
   "bin": {
     "create-adr": "bin/create-adr.js"

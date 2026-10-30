@@ -101,3 +101,7 @@ Before publishing:
    ```
 
 After publish, teams can run both `npx create-adr ...` and `bunx create-adr ...`.
+
+## License
+
+MIT
