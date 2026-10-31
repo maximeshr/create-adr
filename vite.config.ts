@@ -3,12 +3,11 @@ import { defineConfig } from "vite-plus";
 export default defineConfig({
   pack: {
     entry: ["src/cli.ts"],
-    format: ["esm"],
-    platform: "node",
-    clean: true,
-    dts: false,
     deps: {
       resolveDepSubpath: true,
+    },
+    dts: {
+      generator: "tsgo",
     },
   },
   test: {
