@@ -7,7 +7,7 @@ type GenerateAdrInput = {
   targetRoot?: string;
 };
 
-export function ensureAbsoluteRoot(targetRoot: string): string {
+function ensureAbsoluteRoot(targetRoot: string): string {
   const resolvedPath = resolve(targetRoot);
   if (!existsSync(resolvedPath)) {
     throw new Error(`Target path does not exist: ${resolvedPath}`);
