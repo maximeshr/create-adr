@@ -1,13 +1,24 @@
 # create-adr
 
+[![CI](https://github.com/maximeshr/create-adr/actions/workflows/ci.yml/badge.svg?branch=canary)](https://github.com/maximeshr/create-adr/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/create-adr)](https://www.npmjs.com/package/create-adr)
+
 `create-adr` is a small CLI that generates ADR files under `docs/adr/` at the
 target repository root.
+
+## Install
+
+No install needed: run it with `npx` or `pnpm dlx` (see [Usage](#usage)), or install it globally:
+
+```sh
+npm install -g create-adr
+```
 
 Requires Node.js 22.12 or later.
 
 ## Usage
 
-From any repository root (after npm publish):
+From any repository root:
 
 ```sh
 npx create-adr "Use URI path versioning for public APIs"
@@ -34,7 +45,7 @@ The command creates:
 - `docs/adr/` if missing
 - `docs/adr/0001-your-title.md` (or next sequence)
 
-## Generated ADR structure
+### Generated ADR structure
 
 The generated file includes:
 
@@ -47,7 +58,11 @@ The generated file includes:
 - alternatives considered
 - links
 
-## Local development
+## Contributing
+
+Pull requests target `canary`. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### Local development
 
 The toolchain is [Vite+](https://viteplus.dev) (`vp`). Dependencies are managed with [pnpm](https://pnpm.io).
 
@@ -77,4 +92,4 @@ CI runs `pnpm audit --audit-level=high` on every pull request, every push to `ca
 
 ## License
 
-MIT
+[MIT](LICENSE) © Maxime Sahroui
