@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import path from "node:path";
 import { buildAdrTemplate } from "./template.ts";
 
 interface GenerateAdrInput {
@@ -7,8 +7,8 @@ interface GenerateAdrInput {
   targetRoot?: string;
 }
 
-function ensureAbsoluteRoot(targetRoot: string): string {
-  const resolvedPath = resolve(targetRoot);
+const ensureAbsoluteRoot = (targetRoot: string): string => {
+  const resolvedPath = path.resolve(targetRoot);
 
   if (!existsSync(resolvedPath)) {
     throw new Error(`Target path does not exist: ${resolvedPath}`);
@@ -21,10 +21,10 @@ function ensureAbsoluteRoot(targetRoot: string): string {
   }
 
   return resolvedPath;
-}
+};
 
-export function toKebabCase(input: string): string {
-  return input
+export const toKebabCase = (input: string): string =>
+  input
     .toLowerCase()
     .normalize("NFKD")
     .replaceAll(/[\u0300-\u036F]/g, "")
@@ -32,13 +32,10 @@ export function toKebabCase(input: string): string {
     .trim()
     .replaceAll(/\s+/g, "-")
     .replaceAll(/-+/g, "-");
-}
 
-export function formatAdrNumber(value: number): string {
-  return String(value).padStart(4, "0");
-}
+export const formatAdrNumber = (value: number): string => String(value).padStart(4, "0");
 
-export function getNextAdrNumber(adrDirectoryPath: string): string {
+export const getNextAdrNumber = (adrDirectoryPath: string): string => {
   const files = existsSync(adrDirectoryPath) ? readdirSync(adrDirectoryPath) : [];
 
   const maxNumber = files.reduce((currentMax, fileName) => {
@@ -53,13 +50,11 @@ export function getNextAdrNumber(adrDirectoryPath: string): string {
   }, 0);
 
   return formatAdrNumber(maxNumber + 1);
-}
+};
 
-function getIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+const getIsoDate = (): string => new Date().toISOString().slice(0, 10);
 
-export function generateAdr({ title, targetRoot = process.cwd() }: GenerateAdrInput): string {
+export const generateAdr = ({ title, targetRoot = process.cwd() }: GenerateAdrInput): string => {
   const trimmedTitle = title.trim();
 
   if (!trimmedTitle) {
@@ -67,7 +62,7 @@ export function generateAdr({ title, targetRoot = process.cwd() }: GenerateAdrIn
   }
 
   const repositoryRoot = ensureAbsoluteRoot(targetRoot);
-  const adrDirectoryPath = join(repositoryRoot, "docs", "adr");
+  const adrDirectoryPath = path.join(repositoryRoot, "docs", "adr");
   mkdirSync(adrDirectoryPath, { recursive: true });
 
   const adrNumber = getNextAdrNumber(adrDirectoryPath);
@@ -77,7 +72,7 @@ export function generateAdr({ title, targetRoot = process.cwd() }: GenerateAdrIn
     throw new Error("ADR title must include at least one alphanumeric character.");
   }
 
-  const filePath = join(adrDirectoryPath, `${adrNumber}-${slug}.md`);
+  const filePath = path.join(adrDirectoryPath, `${adrNumber}-${slug}.md`);
 
   if (existsSync(filePath)) {
     throw new Error(`ADR already exists: ${filePath}`);
@@ -91,5 +86,5 @@ export function generateAdr({ title, targetRoot = process.cwd() }: GenerateAdrIn
 
   writeFileSync(filePath, content, "utf-8");
 
-  return relative(repositoryRoot, filePath);
-}
+  return path.relative(repositoryRoot, filePath);
+};

@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
@@ -13,7 +13,7 @@ interface CliResult {
   status: number;
 }
 
-function runCli(args: string[]): CliResult {
+const runCli = (args: string[]): CliResult => {
   try {
     const stdout = execFileSync(process.execPath, [cliPath, ...args], {
       encoding: "utf-8",
@@ -34,7 +34,7 @@ function runCli(args: string[]): CliResult {
       status: failure.status,
     };
   }
-}
+};
 
 describe("create-adr CLI", () => {
   let targetRoot = "";
@@ -45,21 +45,26 @@ describe("create-adr CLI", () => {
     }
   });
 
-  function createTargetRoot(): string {
-    targetRoot = mkdtempSync(join(tmpdir(), "create-adr-cli-"));
+  const createTargetRoot = (): string => {
+    targetRoot = mkdtempSync(path.join(tmpdir(), "create-adr-cli-"));
 
     return targetRoot;
-  }
+  };
 
   it("writes an ADR in the target directory", () => {
     const root = createTargetRoot();
     const result = runCli(["Use URI path versioning for public APIs", "--path", root]);
-    const relativePath = join("docs", "adr", "0001-use-uri-path-versioning-for-public-apis.md");
+
+    const relativePath = path.join(
+      "docs",
+      "adr",
+      "0001-use-uri-path-versioning-for-public-apis.md",
+    );
 
     expect(result.status).toBe(0);
     expect(result.stdout.trim()).toBe(`Created ${relativePath}`);
 
-    const content = readFileSync(join(root, relativePath), "utf-8");
+    const content = readFileSync(path.join(root, relativePath), "utf-8");
     expect(content).toMatch(/^# ADR-0001: Use URI path versioning for public APIs/m);
     expect(content).toMatch(/- Status: proposed/);
   });
@@ -69,7 +74,7 @@ describe("create-adr CLI", () => {
     const result = runCli(["--title", "Record the decision", "--path", root]);
 
     expect(result.status).toBe(0);
-    expect(existsSync(join(root, "docs", "adr", "0001-record-the-decision.md"))).toBeTruthy();
+    expect(existsSync(path.join(root, "docs", "adr", "0001-record-the-decision.md"))).toBeTruthy();
   });
 
   it("fails when the title is missing and writes nothing", () => {
@@ -78,7 +83,7 @@ describe("create-adr CLI", () => {
 
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/Missing ADR title/);
-    expect(existsSync(join(root, "docs", "adr"))).toBeFalsy();
+    expect(existsSync(path.join(root, "docs", "adr"))).toBeFalsy();
   });
 
   it("fails when the title is passed twice", () => {
@@ -87,7 +92,7 @@ describe("create-adr CLI", () => {
 
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/not both/);
-    expect(existsSync(join(root, "docs", "adr"))).toBeFalsy();
+    expect(existsSync(path.join(root, "docs", "adr"))).toBeFalsy();
   });
 
   it("prints help and writes nothing", () => {
@@ -96,6 +101,6 @@ describe("create-adr CLI", () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/Usage:/);
-    expect(existsSync(join(root, "docs", "adr"))).toBeFalsy();
+    expect(existsSync(path.join(root, "docs", "adr"))).toBeFalsy();
   });
 });

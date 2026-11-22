@@ -11,7 +11,7 @@ type CliOptions =
       targetRoot: string;
     };
 
-function printHelp(): void {
+const printHelp = (): void => {
   console.log(`create-adr
 
 Usage:
@@ -19,9 +19,9 @@ Usage:
   create-adr --title "Short decision title" [--path <repositoryRoot>]
   create-adr --help
 `);
-}
+};
 
-function parseArguments(argv: string[]): CliOptions {
+const parseArguments = (argv: string[]): CliOptions => {
   const { values, positionals } = parseArgs({
     args: argv.slice(2),
     options: {
@@ -57,9 +57,9 @@ function parseArguments(argv: string[]): CliOptions {
     title: values.title || positionals[0] || "",
     targetRoot: values.path || process.cwd(),
   };
-}
+};
 
-export function main(argv: string[] = process.argv): void {
+export const main = (argv: string[] = process.argv): void => {
   try {
     const options = parseArguments(argv);
 
@@ -84,11 +84,11 @@ export function main(argv: string[] = process.argv): void {
     console.error(message);
     process.exitCode = 1;
   }
-}
+};
 
-// npm and pnpm expose the bin through a symlink. import.meta.url is the real
+// npm and pnpm expose the bin through a symlink. import.meta.filename is the real
 // module, while argv[1] may still be that symlink
-function isDirectExecution(): boolean {
+const isDirectExecution = (): boolean => {
   const entry = process.argv[1];
 
   if (entry === undefined) {
@@ -100,7 +100,7 @@ function isDirectExecution(): boolean {
   } catch {
     return false;
   }
-}
+};
 
 if (isDirectExecution()) {
   main();
