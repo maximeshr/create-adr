@@ -1,12 +1,10 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import path from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 import { formatAdrNumber, generateAdr, getNextAdrNumber, toKebabCase } from "./generate-adr.ts";
 
-function createTempDirectory(): string {
-  return mkdtempSync(join(tmpdir(), "create-adr-"));
-}
+const createTempDirectory = (): string => mkdtempSync(path.join(tmpdir(), "create-adr-"));
 
 describe("generate ADR", () => {
   it("toKebabCase converts title to predictable slug", () => {
@@ -22,10 +20,10 @@ describe("generate ADR", () => {
 
   it("getNextAdrNumber returns next sequence from existing files", () => {
     const tempRoot = createTempDirectory();
-    const adrDir = join(tempRoot, "docs", "adr");
+    const adrDir = path.join(tempRoot, "docs", "adr");
     mkdirSync(adrDir, { recursive: true });
-    writeFileSync(join(adrDir, "0001-first.md"), "", "utf8");
-    writeFileSync(join(adrDir, "0003-third.md"), "", "utf8");
+    writeFileSync(path.join(adrDir, "0001-first.md"), "", "utf-8");
+    writeFileSync(path.join(adrDir, "0003-third.md"), "", "utf-8");
 
     expect(getNextAdrNumber(adrDir)).toBe("0004");
   });
@@ -39,28 +37,37 @@ describe("generate ADR", () => {
     });
 
     expect(relativePath).toBe(
-      join("docs", "adr", "0001-use-uri-path-versioning-for-public-apis.md"),
+      path.join("docs", "adr", "0001-use-uri-path-versioning-for-public-apis.md"),
     );
 
-    const absolutePath = join(tempRoot, relativePath);
-    expect(existsSync(absolutePath)).toBe(true);
+    const absolutePath = path.join(tempRoot, relativePath);
+    expect(existsSync(absolutePath)).toBeTruthy();
 
-    const content = readFileSync(absolutePath, "utf8");
-    expect(content).toMatch(/^# ADR-0001: Use URI path versioning for public APIs/m);
-    expect(content).toMatch(/- Status: proposed/);
-    expect(content).toMatch(/## Context/);
-    expect(content).toMatch(/## Decision/);
-    expect(content).toMatch(/## Consequences/);
-    expect(content).toMatch(/### Expected improvements/);
-    expect(content).toMatch(/### Identified downsides/);
-    expect(content).toMatch(/## Alternatives considered/);
-    expect(content).toMatch(/## Links/);
+    const content = readFileSync(absolutePath, "utf-8");
+    expect(content).toMatch(/^# ADR-0001: Use URI path versioning for public APIs/mu);
+    expect(content).toMatch(/- Status: proposed/u);
+  });
+
+  it("generateAdr writes every template section in order", () => {
+    const tempRoot = createTempDirectory();
+    const relativePath = generateAdr({ title: "Record the decision", targetRoot: tempRoot });
+    const content = readFileSync(path.join(tempRoot, relativePath), "utf-8");
+
+    expect(content.match(/^#{2,3} .+$/gmu)).toStrictEqual([
+      "## Context",
+      "## Decision",
+      "## Consequences",
+      "### Expected improvements",
+      "### Identified downsides",
+      "## Alternatives considered",
+      "## Links",
+    ]);
   });
 
   it("generateAdr throws when title has no valid characters", () => {
     const tempRoot = createTempDirectory();
     expect(() => generateAdr({ title: "!!!", targetRoot: tempRoot })).toThrow(
-      /at least one alphanumeric character/,
+      /at least one alphanumeric character/u,
     );
   });
 });
