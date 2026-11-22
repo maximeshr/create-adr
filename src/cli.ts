@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { realpathSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { generateAdr } from "./generate-adr.ts";
 
@@ -66,6 +65,7 @@ export function main(argv: string[] = process.argv): void {
 
     if (options.help) {
       printHelp();
+
       return;
     }
 
@@ -87,15 +87,16 @@ export function main(argv: string[] = process.argv): void {
 }
 
 // npm and pnpm expose the bin through a symlink. import.meta.url is the real
-// module, while argv[1] may still be that symlink.
+// module, while argv[1] may still be that symlink
 function isDirectExecution(): boolean {
   const entry = process.argv[1];
+
   if (entry === undefined) {
     return false;
   }
 
   try {
-    return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+    return realpathSync(entry) === realpathSync(import.meta.filename);
   } catch {
     return false;
   }

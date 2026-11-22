@@ -24,8 +24,8 @@ describe("generate ADR", () => {
     const tempRoot = createTempDirectory();
     const adrDir = join(tempRoot, "docs", "adr");
     mkdirSync(adrDir, { recursive: true });
-    writeFileSync(join(adrDir, "0001-first.md"), "", "utf8");
-    writeFileSync(join(adrDir, "0003-third.md"), "", "utf8");
+    writeFileSync(join(adrDir, "0001-first.md"), "", "utf-8");
+    writeFileSync(join(adrDir, "0003-third.md"), "", "utf-8");
 
     expect(getNextAdrNumber(adrDir)).toBe("0004");
   });
@@ -43,9 +43,9 @@ describe("generate ADR", () => {
     );
 
     const absolutePath = join(tempRoot, relativePath);
-    expect(existsSync(absolutePath)).toBe(true);
+    expect(existsSync(absolutePath)).toBeTruthy();
 
-    const content = readFileSync(absolutePath, "utf8");
+    const content = readFileSync(absolutePath, "utf-8");
     expect(content).toMatch(/^# ADR-0001: Use URI path versioning for public APIs/m);
     expect(content).toMatch(/- Status: proposed/);
     expect(content).toMatch(/## Context/);

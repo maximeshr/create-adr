@@ -1,8 +1,8 @@
-type BuildAdrTemplateInput = {
+interface BuildAdrTemplateInput {
   adrNumber: string;
   title: string;
   date: string;
-};
+}
 
 export function buildAdrTemplate({ adrNumber, title, date }: BuildAdrTemplateInput): string {
   return `# ADR-${adrNumber}: ${title}
