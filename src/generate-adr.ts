@@ -27,27 +27,26 @@ export const toKebabCase = (input: string): string =>
   input
     .toLowerCase()
     .normalize("NFKD")
-    .replaceAll(/[\u0300-\u036F]/g, "")
-    .replaceAll(/[^a-z0-9\s-]/g, "")
+    .replaceAll(/[\u0300-\u036F]/gu, "")
+    .replaceAll(/[^a-z0-9\s-]/gu, "")
     .trim()
-    .replaceAll(/\s+/g, "-")
-    .replaceAll(/-+/g, "-");
+    .replaceAll(/\s+/gu, "-")
+    .replaceAll(/-+/gu, "-");
 
 export const formatAdrNumber = (value: number): string => String(value).padStart(4, "0");
 
 export const getNextAdrNumber = (adrDirectoryPath: string): string => {
   const files = existsSync(adrDirectoryPath) ? readdirSync(adrDirectoryPath) : [];
 
-  const maxNumber = files.reduce((currentMax, fileName) => {
-    const match = /^(\d{4})-/.exec(fileName);
-    const capturedNumber = match?.[1];
+  let maxNumber = 0;
 
-    if (capturedNumber === undefined) {
-      return currentMax;
+  for (const fileName of files) {
+    const capturedNumber = /^(?<number>\d{4})-/u.exec(fileName)?.groups?.number;
+
+    if (capturedNumber !== undefined) {
+      maxNumber = Math.max(maxNumber, Number(capturedNumber));
     }
-
-    return Math.max(currentMax, Number(capturedNumber));
-  }, 0);
+  }
 
   return formatAdrNumber(maxNumber + 1);
 };
