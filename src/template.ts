@@ -1,11 +1,11 @@
-type BuildAdrTemplateInput = {
+interface BuildAdrTemplateInput {
   adrNumber: string;
   title: string;
   date: string;
-};
+}
 
-export function buildAdrTemplate({ adrNumber, title, date }: BuildAdrTemplateInput): string {
-  return `# ADR-${adrNumber}: ${title}
+export const buildAdrTemplate = ({ adrNumber, title, date }: BuildAdrTemplateInput): string =>
+  `# ADR-${adrNumber}: ${title}
 
 - Status: proposed
 - Date: ${date}
@@ -34,4 +34,3 @@ What do we decide?
 - Merge Request: <link>
 - Related ADRs: ADR-000X
 `;
-}

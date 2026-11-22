@@ -1,13 +1,24 @@
 # create-adr
 
+[![CI](https://github.com/maximeshr/create-adr/actions/workflows/ci.yml/badge.svg?branch=canary)](https://github.com/maximeshr/create-adr/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/create-adr)](https://www.npmjs.com/package/create-adr)
+
 `create-adr` is a small CLI that generates ADR files under `docs/adr/` at the
 target repository root.
+
+## Install
+
+No install needed: run it with `npx` or `pnpm dlx` (see [Usage](#usage)), or install it globally:
+
+```sh
+npm install -g create-adr
+```
 
 Requires Node.js 22.12 or later.
 
 ## Usage
 
-From any repository root (after npm publish):
+From any repository root:
 
 ```sh
 npx create-adr "Use URI path versioning for public APIs"
@@ -34,7 +45,7 @@ The command creates:
 - `docs/adr/` if missing
 - `docs/adr/0001-your-title.md` (or next sequence)
 
-## Generated ADR structure
+### Generated ADR structure
 
 The generated file includes:
 
@@ -47,7 +58,11 @@ The generated file includes:
 - alternatives considered
 - links
 
-## Local development
+## Contributing
+
+Pull requests target `canary`. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### Local development
 
 The toolchain is [Vite+](https://viteplus.dev) (`vp`). Dependencies are managed with [pnpm](https://pnpm.io).
 
@@ -69,12 +84,12 @@ node ./src/cli.ts "Use URI path versioning for public APIs" --path /path/to/repo
 node ./dist/cli.mjs --help
 ```
 
-Releases use [changesets](https://github.com/changesets/changesets). Describe each user-facing change with `vp exec changeset`. On `main`, the Release workflow opens a "Version Packages" pull request that bumps the version and updates `CHANGELOG.md`; merging it publishes to npm and creates the `vX.Y.Z` tag.
+Pull requests target `canary`, the default branch; `main` is the released state. Each user-facing change adds a changeset (`vp exec changeset`); internal pull requests (`ci`, `build`, `test`, `docs`, `chore`) do not need one. On every push to `canary`, the Release workflow opens or updates the `canary` → `main` release pull request with the full release notes. Merging it (merge commit) versions the package, updates `CHANGELOG.md`, publishes to npm with provenance, tags `vX.Y.Z` and creates the GitHub release. The flow comes from [quality-gate](https://github.com/maximeshr/quality-gate).
 
 Never edit the version in `package.json` or push release tags by hand: `vp run check:version` fails CI and the Release workflow when the version is neither published nor in `CHANGELOG.md`.
 
-CI runs `pnpm audit --audit-level=high` on every pull request, every push to `main`, and weekly, because Dependabot does not raise alerts on a pnpm 12 lockfile.
+CI runs `pnpm audit --audit-level=high` on every pull request, every push to `canary` and `main`, and weekly, because Dependabot does not raise alerts on a pnpm 12 lockfile.
 
 ## License
 
-MIT
+[MIT](LICENSE) © Maxime Sahroui

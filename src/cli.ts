@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { realpathSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { generateAdr } from "./generate-adr.ts";
 
@@ -12,7 +11,10 @@ type CliOptions =
       targetRoot: string;
     };
 
-function printHelp(): void {
+const isNonEmpty = (value: string | undefined): value is string =>
+  value !== undefined && value !== "";
+
+const printHelp = (): void => {
   console.log(`create-adr
 
 Usage:
@@ -20,9 +22,9 @@ Usage:
   create-adr --title "Short decision title" [--path <repositoryRoot>]
   create-adr --help
 `);
-}
+};
 
-function parseArguments(argv: string[]): CliOptions {
+const parseArguments = (argv: string[]): CliOptions => {
   const { values, positionals } = parseArgs({
     args: argv.slice(2),
     options: {
@@ -41,7 +43,7 @@ function parseArguments(argv: string[]): CliOptions {
     strict: true,
   });
 
-  if (values.help) {
+  if (values.help === true) {
     return { help: true };
   }
 
@@ -49,23 +51,24 @@ function parseArguments(argv: string[]): CliOptions {
     throw new Error(`Unexpected positional arguments: ${positionals.slice(1).join(" ")}`);
   }
 
-  if (values.title && positionals.length > 0) {
+  if (isNonEmpty(values.title) && positionals.length > 0) {
     throw new Error("Provide the ADR title either positionally or with --title, not both.");
   }
 
   return {
     help: false,
-    title: values.title || positionals[0] || "",
-    targetRoot: values.path || process.cwd(),
+    title: [values.title, positionals[0]].find(isNonEmpty) ?? "",
+    targetRoot: isNonEmpty(values.path) ? values.path : process.cwd(),
   };
-}
+};
 
-export function main(argv: string[] = process.argv): void {
+export const main = (argv: string[] = process.argv): void => {
   try {
     const options = parseArguments(argv);
 
     if (options.help) {
       printHelp();
+
       return;
     }
 
@@ -84,22 +87,23 @@ export function main(argv: string[] = process.argv): void {
     console.error(message);
     process.exitCode = 1;
   }
-}
+};
 
-// npm and pnpm expose the bin through a symlink. import.meta.url is the real
-// module, while argv[1] may still be that symlink.
-function isDirectExecution(): boolean {
-  const entry = process.argv[1];
+// npm and pnpm expose the bin through a symlink. import.meta.filename is the real
+// module, while argv[1] may still be that symlink
+const isDirectExecution = (): boolean => {
+  const [, entry] = process.argv;
+
   if (entry === undefined) {
     return false;
   }
 
   try {
-    return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+    return realpathSync(entry) === realpathSync(import.meta.filename);
   } catch {
     return false;
   }
-}
+};
 
 if (isDirectExecution()) {
   main();
