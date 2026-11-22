@@ -44,21 +44,30 @@ describe("generate ADR", () => {
     expect(existsSync(absolutePath)).toBeTruthy();
 
     const content = readFileSync(absolutePath, "utf-8");
-    expect(content).toMatch(/^# ADR-0001: Use URI path versioning for public APIs/m);
-    expect(content).toMatch(/- Status: proposed/);
-    expect(content).toMatch(/## Context/);
-    expect(content).toMatch(/## Decision/);
-    expect(content).toMatch(/## Consequences/);
-    expect(content).toMatch(/### Expected improvements/);
-    expect(content).toMatch(/### Identified downsides/);
-    expect(content).toMatch(/## Alternatives considered/);
-    expect(content).toMatch(/## Links/);
+    expect(content).toMatch(/^# ADR-0001: Use URI path versioning for public APIs/mu);
+    expect(content).toMatch(/- Status: proposed/u);
+  });
+
+  it("generateAdr writes every template section in order", () => {
+    const tempRoot = createTempDirectory();
+    const relativePath = generateAdr({ title: "Record the decision", targetRoot: tempRoot });
+    const content = readFileSync(path.join(tempRoot, relativePath), "utf-8");
+
+    expect(content.match(/^#{2,3} .+$/gmu)).toStrictEqual([
+      "## Context",
+      "## Decision",
+      "## Consequences",
+      "### Expected improvements",
+      "### Identified downsides",
+      "## Alternatives considered",
+      "## Links",
+    ]);
   });
 
   it("generateAdr throws when title has no valid characters", () => {
     const tempRoot = createTempDirectory();
     expect(() => generateAdr({ title: "!!!", targetRoot: tempRoot })).toThrow(
-      /at least one alphanumeric character/,
+      /at least one alphanumeric character/u,
     );
   });
 });

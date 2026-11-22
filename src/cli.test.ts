@@ -13,6 +13,15 @@ interface CliResult {
   status: number;
 }
 
+const isExecFailure = (error: unknown): error is Error & CliResult =>
+  error instanceof Error &&
+  "status" in error &&
+  typeof error.status === "number" &&
+  "stdout" in error &&
+  typeof error.stdout === "string" &&
+  "stderr" in error &&
+  typeof error.stderr === "string";
+
 const runCli = (args: string[]): CliResult => {
   try {
     const stdout = execFileSync(process.execPath, [cliPath, ...args], {
@@ -22,17 +31,11 @@ const runCli = (args: string[]): CliResult => {
 
     return { stdout, stderr: "", status: 0 };
   } catch (error) {
-    if (!(error instanceof Error) || !("status" in error)) {
+    if (!isExecFailure(error)) {
       throw error;
     }
 
-    const failure = error as Error & { status: number; stdout: string; stderr: string };
-
-    return {
-      stdout: failure.stdout,
-      stderr: failure.stderr,
-      status: failure.status,
-    };
+    return { stdout: error.stdout, stderr: error.stderr, status: error.status };
   }
 };
 
@@ -65,8 +68,8 @@ describe("create-adr CLI", () => {
     expect(result.stdout.trim()).toBe(`Created ${relativePath}`);
 
     const content = readFileSync(path.join(root, relativePath), "utf-8");
-    expect(content).toMatch(/^# ADR-0001: Use URI path versioning for public APIs/m);
-    expect(content).toMatch(/- Status: proposed/);
+    expect(content).toMatch(/^# ADR-0001: Use URI path versioning for public APIs/mu);
+    expect(content).toMatch(/- Status: proposed/u);
   });
 
   it("accepts the title from --title", () => {
@@ -82,7 +85,7 @@ describe("create-adr CLI", () => {
     const result = runCli(["--path", root]);
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toMatch(/Missing ADR title/);
+    expect(result.stderr).toMatch(/Missing ADR title/u);
     expect(existsSync(path.join(root, "docs", "adr"))).toBeFalsy();
   });
 
@@ -91,7 +94,7 @@ describe("create-adr CLI", () => {
     const result = runCli(["Positional title", "--title", "Flag title", "--path", root]);
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toMatch(/not both/);
+    expect(result.stderr).toMatch(/not both/u);
     expect(existsSync(path.join(root, "docs", "adr"))).toBeFalsy();
   });
 
@@ -100,7 +103,7 @@ describe("create-adr CLI", () => {
     const result = runCli(["--help", "--path", root]);
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toMatch(/Usage:/);
+    expect(result.stdout).toMatch(/Usage:/u);
     expect(existsSync(path.join(root, "docs", "adr"))).toBeFalsy();
   });
 });
