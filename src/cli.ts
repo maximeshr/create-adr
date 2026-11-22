@@ -11,6 +11,9 @@ type CliOptions =
       targetRoot: string;
     };
 
+const isNonEmpty = (value: string | undefined): value is string =>
+  value !== undefined && value !== "";
+
 const printHelp = (): void => {
   console.log(`create-adr
 
@@ -40,7 +43,7 @@ const parseArguments = (argv: string[]): CliOptions => {
     strict: true,
   });
 
-  if (values.help) {
+  if (values.help === true) {
     return { help: true };
   }
 
@@ -48,14 +51,14 @@ const parseArguments = (argv: string[]): CliOptions => {
     throw new Error(`Unexpected positional arguments: ${positionals.slice(1).join(" ")}`);
   }
 
-  if (values.title && positionals.length > 0) {
+  if (isNonEmpty(values.title) && positionals.length > 0) {
     throw new Error("Provide the ADR title either positionally or with --title, not both.");
   }
 
   return {
     help: false,
-    title: values.title || positionals[0] || "",
-    targetRoot: values.path || process.cwd(),
+    title: [values.title, positionals[0]].find(isNonEmpty) ?? "",
+    targetRoot: isNonEmpty(values.path) ? values.path : process.cwd(),
   };
 };
 
@@ -89,7 +92,7 @@ export const main = (argv: string[] = process.argv): void => {
 // npm and pnpm expose the bin through a symlink. import.meta.filename is the real
 // module, while argv[1] may still be that symlink
 const isDirectExecution = (): boolean => {
-  const entry = process.argv[1];
+  const [, entry] = process.argv;
 
   if (entry === undefined) {
     return false;
