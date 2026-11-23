@@ -1,0 +1,6 @@
+{
+  "extraKnownMarketplaces": {
+    "okq": { "source": { "source": "github", "repo": "maximeshr/quality-gate", "ref": "v0.10.0" } }
+  },
+  "enabledPlugins": { "okq@okq": true }
+}
